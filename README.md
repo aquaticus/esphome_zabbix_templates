@@ -14,3 +14,4 @@ The file consists of 3 templates:
 
 SNMP Component: https://github.com/aquaticus/esphome/tree/aquaticus-snmp
 
+Zabbix integration guide: https://aquaticus.info/zabbix.html
