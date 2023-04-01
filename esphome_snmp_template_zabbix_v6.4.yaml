@@ -1,0 +1,811 @@
+zabbix_export:
+  version: '6.4'
+  template_groups:
+    -
+      uuid: 61df325b73d1402cb8578bd566021028
+      name: esphome
+    -
+      uuid: 36bff6c29af64692839d077febfc7079
+      name: 'Templates/Network devices'
+  templates:
+    -
+      uuid: bd98054cadc84f4d911b9771ff9eb920
+      template: 'Esphome by SNMP'
+      name: 'Esphome by SNMP'
+      description: 'For use with Esphome SNMP component'
+      templates:
+        -
+          name: 'ICMP Ping'
+      groups:
+        -
+          name: 'Templates/Network devices'
+      items:
+        -
+          uuid: d8aef4f605124c64a1065efe773d127b
+          name: 'Chip type'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.9999.2.1.0
+          key: espChipType
+          delay: 15m
+          history: 2w
+          trends: '0'
+          description: 'Chip family: ESP8266 or ESP32 (all variants)'
+          valuemap:
+            name: 'Chip type'
+          tags:
+            -
+              tag: component
+              value: cpu
+        -
+          uuid: c3359c2b598b4f0aa197747f4af5e33a
+          name: 'CPU Clock'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.9999.2.2.0
+          key: espCPUClock
+          delay: 15m
+          history: 2w
+          trends: '0'
+          units: MHz
+          tags:
+            -
+              tag: component
+              value: cpu
+        -
+          uuid: dd1445e61f4340888b6519040aa99b37
+          name: 'RAM Memory Size'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.25.2.2
+          key: hrMemorySize
+          delay: 1h
+          history: 7d
+          units: kb
+          description: 'The amount of standard RAM memory in kb'
+          tags:
+            -
+              tag: component
+              value: memory
+        -
+          uuid: 0c2f6b2ca682403ca315ab7207829e6f
+          name: 'FLASH Memory Size'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.25.2.3.1.5.1
+          key: 'hrStorageSize[FLASH]'
+          delay: 1h
+          history: 7d
+          units: b
+          tags:
+            -
+              tag: component
+              value: storage
+        -
+          uuid: 701c5bb0d37142c193b295e419b3ff2e
+          name: 'FLASH Memory Usage'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.25.2.3.1.6.1
+          key: 'hrStorageUsed[FLASH]'
+          history: 2w
+          units: b
+          tags:
+            -
+              tag: component
+              value: storage
+        -
+          uuid: 3dc224f587274ca7982a5c77f2514dd1
+          name: 'System contact details'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.4.0
+          key: 'system.contact[sysContact.0]'
+          delay: 15m
+          history: 2w
+          trends: '0'
+          value_type: CHAR
+          description: |
+            MIB: SNMPv2-MIB
+            The textual identification of the contact person for this managed node, together with information on how to contact this person.  If no contact information is known, the value is the zero-length string.
+          inventory_link: CONTACT
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 12h
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: 92a1668650904326bb05215a5d9a99d5
+          name: 'System description'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.1.0
+          key: 'system.descr[sysDescr.0]'
+          delay: 15m
+          history: 2w
+          trends: '0'
+          value_type: CHAR
+          description: 'ESPhome version, compilation time and board type.'
+          inventory_link: SOFTWARE_FULL
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 12h
+          tags:
+            -
+              tag: component
+              value: system
+          triggers:
+            -
+              uuid: f9d7ab41179b49f8994df6d6e72300c6
+              expression: 'change(/Esphome by SNMP/system.descr[sysDescr.0])'
+              name: 'Firmware has changed'
+              event_name: 'Firmware has changed (new version: {ITEM.VALUE})'
+              priority: INFO
+              description: 'Firmware version, compilation date or board has changed.'
+              manual_close: 'YES'
+              tags:
+                -
+                  tag: scope
+                  value: notice
+                -
+                  tag: scope
+                  value: security
+        -
+          uuid: 10861d7682de4f35997284c8060f9ff7
+          name: 'Uptime (hardware)'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.25.1.1.0
+          key: 'system.hw.uptime[hrSystemUptime.0]'
+          delay: 30s
+          history: 2w
+          trends: 0d
+          units: uptime
+          description: |
+            MIB: HOST-RESOURCES-MIB
+            The amount of time since this host was last initialized. Note that this is different from sysUpTime in the SNMPv2-MIB [RFC1907] because sysUpTime is the uptime of the network management portion of the system.
+          preprocessing:
+            -
+              type: CHECK_NOT_SUPPORTED
+              parameters:
+                - ''
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.01'
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: 93865d0ca0354da19dbf2ff0a88247d0
+          name: 'System location'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.6.0
+          key: 'system.location[sysLocation.0]'
+          delay: 15m
+          history: 2w
+          trends: '0'
+          value_type: CHAR
+          description: |
+            MIB: SNMPv2-MIB
+            The physical location of this node (e.g., `telephone closet, 3rd floor').  If the location is unknown, the value is the zero-length string.
+          inventory_link: LOCATION
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 12h
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: 1f83325addf441ccb87ce903277665b6
+          name: 'System name'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.5.0
+          key: system.name
+          delay: 15m
+          history: 2w
+          trends: '0'
+          value_type: CHAR
+          description: |
+            MIB: SNMPv2-MIB
+            An administratively-assigned name for this managed node.By convention, this is the node's fully-qualified domain name.  If the name is unknown, the value is the zero-length string.
+          inventory_link: NAME
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 12h
+          tags:
+            -
+              tag: component
+              value: system
+          triggers:
+            -
+              uuid: 039579b58c6d46f387b1f19bc7435bac
+              expression: 'change(/Esphome by SNMP/system.name) and length(last(/Esphome by SNMP/system.name))>0'
+              name: 'System name has changed'
+              event_name: 'System name has changed (new name: {ITEM.VALUE})'
+              priority: INFO
+              description: 'The name of the system has changed. `Ack` to close the problem manually.'
+              manual_close: 'YES'
+              tags:
+                -
+                  tag: scope
+                  value: notice
+                -
+                  tag: scope
+                  value: security
+        -
+          uuid: 59bf581a602443c99289a195aea680bf
+          name: 'Uptime (network)'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.3.0
+          key: 'system.net.uptime[sysUpTime.0]'
+          delay: 30s
+          history: 2w
+          trends: '0'
+          units: uptime
+          description: 'The time (in hundredths of a second) since WiFi  was last re-connected.'
+          preprocessing:
+            -
+              type: MULTIPLIER
+              parameters:
+                - '0.01'
+          tags:
+            -
+              tag: component
+              value: system
+          triggers:
+            -
+              uuid: 83c2013a5c3042f78317df9e0c410e47
+              expression: '(last(/Esphome by SNMP/system.net.uptime[sysUpTime.0])>0 and last(/Esphome by SNMP/system.net.uptime[sysUpTime.0])<10m) or (last(/Esphome by SNMP/system.net.uptime[sysUpTime.0])=0 and last(/Esphome by SNMP/system.net.uptime[sysUpTime.0])<10m)'
+              name: 'Network connection has been lost'
+              event_name: '{HOST.NAME} network connection has been lost (network uptime < 10m)'
+              priority: WARNING
+              description: 'Network uptime is less than 10 minutes.'
+              manual_close: 'YES'
+              tags:
+                -
+                  tag: scope
+                  value: availability
+        -
+          uuid: 9181f6144d8d42c9a85367335844951e
+          name: 'System object ID'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.1.2.0
+          key: 'system.objectid[sysObjectID.0]'
+          delay: 15m
+          history: 2w
+          trends: '0'
+          value_type: CHAR
+          description: |
+            MIB: SNMPv2-MIB
+            The vendor's authoritative identification of the network management subsystem contained in the entity.  This value is allocated within the SMI enterprises subtree (1.3.6.1.4.1) and provides an easy and unambiguous means for determining`what kind of box' is being managed.  For example, if vendor`Flintstones, Inc.' was assigned the subtree1.3.6.1.4.1.4242, it could assign the identifier 1.3.6.1.4.1.4242.1.1 to its `Fred Router'.
+          preprocessing:
+            -
+              type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 12h
+          tags:
+            -
+              tag: component
+              value: system
+        -
+          uuid: f0765c8bceb244e486cd36621d56b0dd
+          name: 'WiFi BSSI'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.9999.4.2.0
+          key: wifiBSSI
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: component
+              value: wifi
+        -
+          uuid: 9446d3a7a49748869922ea60709e7b8e
+          name: 'WiFi IP Address'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.9999.4.4.0
+          key: wifiIPAddress
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: component
+              value: wifi
+        -
+          uuid: a52708d8afb0427ebfb58315cc9db3e6
+          name: 'WiFi RSSI'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.9999.4.1.0
+          key: wifiRSSI
+          history: 7d
+          value_type: FLOAT
+          units: dBm
+          tags:
+            -
+              tag: component
+              value: wifi
+          triggers:
+            -
+              uuid: 5c62809da39d4dce93adfc3633f1fcb8
+              expression: 'max(/Esphome by SNMP/wifiRSSI,5m) < {$WIFI_RSSI_WEAK_SIGNAL_DBM}'
+              name: 'Weak WiFi Signal for 5m'
+              event_name: 'WiFi RSSI is low (below {$WIFI_RSSI_WEAK_SIGNAL_DBM} dBm for 5m)'
+              priority: WARNING
+              manual_close: 'YES'
+              tags:
+                -
+                  tag: scope
+                  value: availability
+                -
+                  tag: scope
+                  value: performance
+        -
+          uuid: e2304939a3cc4b328dd1daf22ac8a042
+          name: 'WiFi SSID'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.9999.4.3.0
+          key: wifiSSID
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          tags:
+            -
+              tag: component
+              value: wifi
+        -
+          uuid: f583cc71973349ffba41ed38eaf07d47
+          name: 'SNMP agent availability'
+          type: INTERNAL
+          key: 'zabbix[host,snmp,available]'
+          history: 7d
+          description: |
+            Availability of SNMP checks on the host. The value of this item corresponds to availability icons in the host list.
+            Possible value:
+            0 - not available
+            1 - available
+            2 - unknown
+          valuemap:
+            name: zabbix.host.available
+          tags:
+            -
+              tag: component
+              value: health
+            -
+              tag: component
+              value: network
+          triggers:
+            -
+              uuid: 54edde2e20ef43b2bb5f04e5511ac995
+              expression: 'max(/Esphome by SNMP/zabbix[host,snmp,available],{$SNMP.TIMEOUT})=0'
+              name: 'No SNMP data collection'
+              opdata: 'Current state: {ITEM.LASTVALUE1}'
+              priority: WARNING
+              description: 'SNMP is not available for polling. Please check device connectivity and SNMP settings.'
+              tags:
+                -
+                  tag: scope
+                  value: availability
+      tags:
+        -
+          tag: class
+          value: iot
+        -
+          tag: target
+          value: esphome
+      macros:
+        -
+          macro: '{$ICMP_LOSS_WARN}'
+          value: '20'
+        -
+          macro: '{$ICMP_RESPONSE_TIME_WARN}'
+          value: '0.15'
+        -
+          macro: '{$SNMP.TIMEOUT}'
+          value: 5m
+        -
+          macro: '{$WIFI_RSSI_WEAK_SIGNAL_DBM}'
+          value: '-75'
+          description: 'RSSI minimum value for warning trigger expression'
+      valuemaps:
+        -
+          uuid: 5483e51d13f3418881ed47ecc5301463
+          name: 'Chip type'
+          mappings:
+            -
+              value: '32'
+              newvalue: EPS32
+            -
+              value: '8266'
+              newvalue: ESP8266
+        -
+          uuid: d170b7282cdb4bbb8b8afc9ff14f1e03
+          name: 'Service state'
+          mappings:
+            -
+              value: '0'
+              newvalue: Down
+            -
+              value: '1'
+              newvalue: Up
+        -
+          uuid: f46b097b889c4686882bdb7b288fb274
+          name: zabbix.host.available
+          mappings:
+            -
+              value: '0'
+              newvalue: 'not available'
+            -
+              value: '1'
+              newvalue: available
+            -
+              value: '2'
+              newvalue: unknown
+    -
+      uuid: 32267c1ad3d344ebbcb6ee5bb6d99f0c
+      template: 'Esphome ESP32 by SNMP'
+      name: 'Esphome ESP32 by SNMP'
+      description: 'Espressif ESP32 SNMP template. For use with Esphome SNMP component'
+      templates:
+        -
+          name: 'Esphome by SNMP'
+      groups:
+        -
+          name: esphome
+        -
+          name: 'Templates/Network devices'
+      items:
+        -
+          uuid: 7fbd2e15fac644d3a0ee7f80aecf5ff3
+          name: 'Chip cores'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.9999.2.4.0
+          key: espESP32ChipCores
+          delay: 15m
+          history: 7d
+          trends: '0'
+          tags:
+            -
+              tag: component
+              value: cpu
+        -
+          uuid: d3d239406560475cb4ef28a4dd5a1ee4
+          name: 'Chip revision'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.9999.2.5.0
+          key: espESP32ChipRevision
+          delay: 15m
+          history: 7d
+          trends: '0'
+          tags:
+            -
+              tag: component
+              value: cpu
+        -
+          uuid: 59aa299848224870b19c05f82a8af2ae
+          name: 'Free heap'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.9999.32.2.0
+          key: espESP32FreeHeap
+          history: 7d
+          units: b
+          tags:
+            -
+              tag: component
+              value: memory
+        -
+          uuid: cc6145fe3e6c4243bdb75e76ff224920
+          name: 'Heap size'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.9999.32.1.0
+          key: espESP32HeapSize
+          history: 7d
+          units: b
+          tags:
+            -
+              tag: component
+              value: memory
+        -
+          uuid: 197575cea9734d97badf554096308f58
+          name: 'Maximum allocated heap'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.9999.32.2.0
+          key: espESP32MaxAllocHeap
+          history: 7d
+          units: b
+          tags:
+            -
+              tag: component
+              value: memory
+        -
+          uuid: 0e76d70b017f4695b728010b5a67e3bc
+          name: 'Minimum free heap'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.9999.32.2.0
+          key: espESP32MinFreeHeap
+          history: 7d
+          units: b
+          tags:
+            -
+              tag: component
+              value: memory
+        -
+          uuid: 615935b372c84e1a875a5d33ac308d70
+          name: 'Chip model'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.9999.2.3.0
+          key: espESP32Model
+          delay: 15m
+          history: 7d
+          trends: '0'
+          value_type: CHAR
+          description: 'Chip variant, e.g. ESP32, ESP32-S2, etc'
+          inventory_link: HARDWARE
+          tags:
+            -
+              tag: component
+              value: cpu
+        -
+          uuid: dcf3ec53013f4148962b6c3e30515d45
+          name: 'PSI RAM Size'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.25.2.3.1.5.2
+          key: 'hrStorageSize[PSIRAM]'
+          delay: 1h
+          history: 7d
+          units: b
+          description: 'PSI RAM Size. 0 if not available.'
+          tags:
+            -
+              tag: component
+              value: storage
+        -
+          uuid: dc8d8a3801eb42079b5b1b8fd86754a7
+          name: 'PSI RAM Usage'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.6.1.2.1.25.2.3.1.6.2
+          key: 'hrStorageUsed[PSIRAM]'
+          history: 2w
+          units: b
+          description: 'PSI RAM Usage. 0 if PSI RAM not available.'
+          tags:
+            -
+              tag: component
+              value: storage
+      tags:
+        -
+          tag: class
+          value: iot
+        -
+          tag: target
+          value: esphome
+      valuemaps:
+        -
+          uuid: 7103dc6898994e74b8e016d384a37f06
+          name: 'ESP32 Variant'
+          mappings:
+            -
+              value: '1'
+              newvalue: ESP32
+            -
+              value: '2'
+              newvalue: S2
+            -
+              value: '9'
+              newvalue: S3
+            -
+              value: '5'
+              newvalue: C3
+            -
+              value: '6'
+              newvalue: H2
+            -
+              value: '12'
+              newvalue: C2
+            -
+              value: '13'
+              newvalue: C6
+    -
+      uuid: 0b2a34f203364520af625c169c56e69c
+      template: 'Esphome ESP8266 by SNMP'
+      name: 'Esphome ESP8266 by SNMP'
+      description: 'For use with Esphome SNMP component'
+      templates:
+        -
+          name: 'Esphome by SNMP'
+      groups:
+        -
+          name: 'Templates/Network devices'
+      items:
+        -
+          uuid: cb3d99c2d0eb45b893913d9d8618dcbe
+          name: 'Free heap'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.9999.8266.1.0
+          key: esp8266FreeHeap
+          history: 2w
+          units: b
+          tags:
+            -
+              tag: component
+              value: memory
+        -
+          uuid: 23252553d09944f59f9235c1677b830e
+          name: 'Heap Fragmentation'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.9999.8266.2.0
+          key: esp8266HeapFrag
+          history: 2w
+          units: '%'
+          description: 'Heap fragmentation in percents'
+          tags:
+            -
+              tag: component
+              value: memory
+        -
+          uuid: 5d0ebc085225422aa1f2db8b7439fa91
+          name: 'Heap Maximum Free Block'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.9999.8266.3.0
+          key: esp8266HeapMaxFree
+          history: 2w
+          units: b
+          description: 'Maximum size of free heap block'
+          tags:
+            -
+              tag: component
+              value: memory
+        -
+          uuid: a06059260f7040aba25cff4d79a21f1d
+          name: 'Chip Core Version'
+          type: SNMP_AGENT
+          snmp_oid: 1.3.9999.2.3.0
+          key: espESP8266CoreVer
+          delay: 15m
+          history: 2w
+          trends: '0'
+          value_type: CHAR
+          description: 'Core version for ESP8266'
+          tags:
+            -
+              tag: component
+              value: cpu
+      tags:
+        -
+          tag: class
+          value: iot
+        -
+          tag: target
+          value: esphome
+      macros:
+        -
+          macro: '{$ICMP_LOSS_WARN}'
+          value: '20'
+        -
+          macro: '{$ICMP_RESPONSE_TIME_WARN}'
+          value: '0.15'
+        -
+          macro: '{$SNMP.TIMEOUT}'
+          value: 5m
+        -
+          macro: '{$WIFI_RSSI_WEAK_SIGNAL_DBM}'
+          value: '-75'
+          description: 'RSSI minimum value for warning trigger expression'
+      valuemaps:
+        -
+          uuid: 558c5b089be845be9f77d2e80ce7ca2d
+          name: 'Chip type'
+          mappings:
+            -
+              value: '32'
+              newvalue: EPS32
+            -
+              value: '8266'
+              newvalue: ESP8266
+        -
+          uuid: 32b8f3dcb74e4cf2a2201267940ef788
+          name: 'Service state'
+          mappings:
+            -
+              value: '0'
+              newvalue: Down
+            -
+              value: '1'
+              newvalue: Up
+        -
+          uuid: bce1e10a7fbe4a23bcc3a84a1a52c104
+          name: zabbix.host.available
+          mappings:
+            -
+              value: '0'
+              newvalue: 'not available'
+            -
+              value: '1'
+              newvalue: available
+            -
+              value: '2'
+              newvalue: unknown
+  triggers:
+    -
+      uuid: 7b9d21c9c55e41c5b318879273eea018
+      expression: '(last(/Esphome by SNMP/system.hw.uptime[hrSystemUptime.0])>0 and last(/Esphome by SNMP/system.hw.uptime[hrSystemUptime.0])<10m) or (last(/Esphome by SNMP/system.hw.uptime[hrSystemUptime.0])=0 and last(/Esphome by SNMP/system.net.uptime[sysUpTime.0])<10m)'
+      name: 'Host has been restarted'
+      event_name: '{HOST.NAME} has been restarted (uptime < 10m)'
+      priority: WARNING
+      description: 'Uptime is less than 10 minutes.'
+      manual_close: 'YES'
+      dependencies:
+        -
+          name: 'No SNMP data collection'
+          expression: 'max(/Esphome by SNMP/zabbix[host,snmp,available],{$SNMP.TIMEOUT})=0'
+      tags:
+        -
+          tag: scope
+          value: notice
+  graphs:
+    -
+      uuid: aedf471f9b0049fcbd6fe9c4bbf6ecb9
+      name: 'Heap Usage'
+      graph_items:
+        -
+          color: 1A7C11
+          calc_fnc: ALL
+          item:
+            host: 'Esphome ESP8266 by SNMP'
+            key: esp8266FreeHeap
+        -
+          sortorder: '1'
+          color: '274482'
+          calc_fnc: ALL
+          item:
+            host: 'Esphome ESP8266 by SNMP'
+            key: esp8266HeapFrag
+        -
+          sortorder: '2'
+          color: F63100
+          calc_fnc: ALL
+          item:
+            host: 'Esphome ESP8266 by SNMP'
+            key: esp8266HeapMaxFree
+    -
+      uuid: c2986f5b60164799aacf60faea0712f0
+      name: 'Heap Usage'
+      graph_items:
+        -
+          color: 1A7C11
+          calc_fnc: ALL
+          item:
+            host: 'Esphome ESP32 by SNMP'
+            key: espESP32FreeHeap
+        -
+          sortorder: '1'
+          color: F63100
+          calc_fnc: ALL
+          item:
+            host: 'Esphome ESP32 by SNMP'
+            key: espESP32MaxAllocHeap
+        -
+          sortorder: '2'
+          color: 2774A4
+          calc_fnc: ALL
+          item:
+            host: 'Esphome ESP32 by SNMP'
+            key: espESP32MinFreeHeap
+    -
+      uuid: 40620f23a39241429e274eb83ec1fa88
+      name: 'WiFi Signal'
+      graph_items:
+        -
+          color: 1A7C11
+          calc_fnc: ALL
+          item:
+            host: 'Esphome by SNMP'
+            key: wifiRSSI
