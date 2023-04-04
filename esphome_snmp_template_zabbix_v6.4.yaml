@@ -2,8 +2,8 @@ zabbix_export:
   version: '6.4'
   template_groups:
     -
-      uuid: 61df325b73d1402cb8578bd566021028
-      name: esphome
+      uuid: 8413b957de70491b8b389288e99c51f1
+      name: Templates/ESPHome
     -
       uuid: 36bff6c29af64692839d077febfc7079
       name: 'Templates/Network devices'
@@ -12,11 +12,22 @@ zabbix_export:
       uuid: bd98054cadc84f4d911b9771ff9eb920
       template: 'Esphome by SNMP'
       name: 'Esphome by SNMP'
-      description: 'For use with Esphome SNMP component'
+      description: |
+        Base template for ESP32 and ESP8266 templates.
+        
+        For use with Aquaticus Esphome SNMP component.
+        
+        SNMP Component installation guide: https://aquaticus.info/snmp.html
+        Template repository: https://github.com/aquaticus/esphome_zabbix_templates
+      vendor:
+        name: Aquaticus
+        version: 6.4-0
       templates:
         -
           name: 'ICMP Ping'
       groups:
+        -
+          name: Templates/ESPHome
         -
           name: 'Templates/Network devices'
       items:
@@ -307,6 +318,22 @@ zabbix_export:
             -
               tag: component
               value: wifi
+          triggers:
+            -
+              uuid: adbea1ddb0604b058be396a4ae9438fc
+              expression: 'change(/Esphome by SNMP/wifiBSSI) and length(last(/Esphome by SNMP/wifiBSSI))>0'
+              name: 'WiFi Access Point has changed'
+              event_name: 'WiFi Access Point has changed (new name: {ITEM.VALUE})'
+              priority: INFO
+              description: 'WiFi BSSI has changed. `Ack` to close the problem manually.'
+              manual_close: 'YES'
+              tags:
+                -
+                  tag: scope
+                  value: notice
+                -
+                  tag: scope
+                  value: security
         -
           uuid: 9446d3a7a49748869922ea60709e7b8e
           name: 'WiFi IP Address'
@@ -453,13 +480,22 @@ zabbix_export:
       uuid: 32267c1ad3d344ebbcb6ee5bb6d99f0c
       template: 'Esphome ESP32 by SNMP'
       name: 'Esphome ESP32 by SNMP'
-      description: 'Espressif ESP32 SNMP template. For use with Esphome SNMP component'
+      description: |
+        Espressif ESP32 SNMP template. 
+        
+        For use with Aquaticus Esphome SNMP component.
+        
+        SNMP Component installation guide: https://aquaticus.info/snmp.html
+        Template repository: https://github.com/aquaticus/esphome_zabbix_templates
+      vendor:
+        name: Aquaticus
+        version: 6.4-0
       templates:
         -
           name: 'Esphome by SNMP'
       groups:
         -
-          name: esphome
+          name: Templates/ESPHome
         -
           name: 'Templates/Network devices'
       items:
@@ -617,11 +653,22 @@ zabbix_export:
       uuid: 0b2a34f203364520af625c169c56e69c
       template: 'Esphome ESP8266 by SNMP'
       name: 'Esphome ESP8266 by SNMP'
-      description: 'For use with Esphome SNMP component'
+      description: |
+        Espressif ESP8266 SNMP template. 
+        
+        For use with Aquaticus Esphome SNMP component.
+        
+        SNMP Component installation guide: https://aquaticus.info/snmp.html
+        Template repository: https://github.com/aquaticus/esphome_zabbix_templates
+      vendor:
+        name: Aquaticus
+        version: 6.4-0
       templates:
         -
           name: 'Esphome by SNMP'
       groups:
+        -
+          name: Templates/ESPHome
         -
           name: 'Templates/Network devices'
       items:
